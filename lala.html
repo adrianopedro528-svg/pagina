@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedido de Desculpas</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            text-align: center;
+            /* Evita selecionar texto */
+            user-select: none; 
+            -webkit-user-select: none;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 600px;
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+        h1, h2 {
+            color: #333;
+            margin-bottom: 20px;
+            white-space: pre-line;
+        }
+        .botoes {
+            display: flex;
+            gap: 20px;
+            position: relative;
+            height: 50px;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 12px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-bom {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-bom:hover {
+            background-color: #45a049;
+        }
+        .btn-fujao {
+            background-color: #f44336;
+            color: white;
+            position: absolute;
+        }
+        
+        #tela-motivos, #tela-final, #tela-sucesso {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #imagem-motivo {
+            max-width: 200px;
+            max-height: 200px;
+            margin-bottom: 20px;
+            display: none;
+            animation: fadeIn 1s;
+        }
+
+        #texto-motivo {
+            font-size: 24px;
+            color: #444;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 1s;
+        }
+
+        #mensagem-sucesso {
+            font-size: 28px;
+            color: #d81b60;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        #foto-final-img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="tela-inicial">
+        <h1>Motivos para você me perdoar</h1>
+        <div class="botoes">
+            <button class="btn-bom" id="btn-iniciar" style="position: relative;">Iniciar</button>
+            <button class="btn-fujao" id="btn-ignorar">Ignorar</button>
+        </div>
+    </div>
+
+    <div class="container" id="tela-motivos">
+        <img id="imagem-motivo" src="" alt="Imagem do motivo">
+        <div id="texto-motivo"></div>
+        <button id="btn-avancar" class="btn-bom" style="margin-top: 20px;">Avançar ➔</button>
+    </div>
+
+    <div class="container" id="tela-final">
+        <h1>Então...</h1>
+        <div class="botoes">
+            <button class="btn-bom" id="btn-perdoar" style="position: relative;">Me perdoa?</button>
+            <button class="btn-fujao" id="btn-inferno">Vai pro Inferno</button>
+        </div>
+    </div>
+
+    <div class="container" id="tela-sucesso">
+        <div id="mensagem-sucesso">Sabia que vc tinha bom coração, Lala ❤️</div>
+        <img src="foto-final.jpg" id="foto-final-img" alt="Nossa foto especial" onerror="this.style.display='none'">
+        <p style="color: #666; font-size: 14px;">Redirecionando para o YouTube...</p>
+    </div>
+
+    <script>
+        // Travar botão direito do mouse
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Alerta se tentar fechar a aba
+        let podeSair = false;
+        window.addEventListener('beforeunload', function (e) {
+            if (!podeSair) {
+                e.preventDefault();
+                e.returnValue = ''; // Necessário para mostrar o aviso do navegador
+            }
+        });
+
+        const motivos = [
+            { texto: "1° Motivo:\nNão queria rir de você, mas rir com vc. Brinquei mais que a brincadeira...", imagem: "img1.jpg" },
+            { texto: "2° Motivo:\nNão gosto de ver você séria, sem fazer brincadeira", imagem: "img2.png" },
+            { texto: "3° Motivo:\nO dia passa mais rápido quando a gente faz companhia um ao outro", imagem: "img4.jpeg" },
+            { texto: "4° Motivo:\nVocê dá medo quando fica com raiva", imagem: "img5.jpg" },
+            { texto: "5° Motivo:\nFormamos uma boa dupla, pô", imagem: "img6.jpeg" }
+        ];
+
+        const telaInicial = document.getElementById('tela-inicial');
+        const telaMotivos = document.getElementById('tela-motivos');
+        const telaFinal = document.getElementById('tela-final');
+        const telaSucesso = document.getElementById('tela-sucesso');
+        const textoMotivo = document.getElementById('texto-motivo');
+        const imagemMotivo = document.getElementById('imagem-motivo');
+        
+        const btnIniciar = document.getElementById('btn-iniciar');
+        const btnIgnorar = document.getElementById('btn-ignorar');
+        const btnPerdoar = document.getElementById('btn-perdoar');
+        const btnInferno = document.getElementById('btn-inferno');
+        const btnAvancar = document.getElementById('btn-avancar');
+
+        let indiceAtual = 0;
+
+        function fugir(e) {
+            if (e.type === 'touchstart') e.preventDefault();
+            const botao = e.target;
+            botao.style.position = 'fixed';
+            const randomX = Math.random() * (window.innerWidth - botao.offsetWidth);
+            const randomY = Math.random() * (window.innerHeight - botao.offsetHeight);
+            botao.style.left = `${randomX}px`;
+            botao.style.top = `${randomY}px`;
+        }
+
+        btnIgnorar.addEventListener('mouseover', fugir);
+        btnIgnorar.addEventListener('touchstart', fugir);
+        btnInferno.addEventListener('mouseover', fugir);
+        btnInferno.addEventListener('touchstart', fugir);
+
+        function posicionarFujaoInicial(btnId) {
+            const btn = document.getElementById(btnId);
+            btn.style.position = 'absolute';
+            btn.style.left = '60%';
+        }
+        posicionarFujaoInicial('btn-ignorar');
+        posicionarFujaoInicial('btn-inferno');
+
+        function exibirMotivo(index) {
+            textoMotivo.style.animation = 'none';
+            imagemMotivo.style.animation = 'none';
+            textoMotivo.offsetHeight; 
+            
+            textoMotivo.innerText = motivos[index].texto;
+            imagemMotivo.src = motivos[index].imagem;
+            imagemMotivo.style.display = 'block';
+
+            textoMotivo.style.animation = 'fadeIn 1s';
+            imagemMotivo.style.animation = 'fadeIn 1s';
+        }
+
+        btnIniciar.addEventListener('click', () => {
+            // Força tela cheia ao iniciar
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            }
+
+            telaInicial.style.display = 'none';
+            telaMotivos.style.display = 'flex';
+            
+            indiceAtual = 0;
+            exibirMotivo(indiceAtual);
+        });
+
+        btnAvancar.addEventListener('click', () => {
+            indiceAtual++;
+            if (indiceAtual < motivos.length) {
+                exibirMotivo(indiceAtual);
+            } else {
+                telaMotivos.style.display = 'none';
+                telaFinal.style.display = 'flex';
+            }
+        });
+
+        btnPerdoar.addEventListener('click', () => {
+            telaFinal.style.display = 'none';
+            telaSucesso.style.display = 'flex';
+
+            const duration = 4000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+                const particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+
+            setTimeout(() => {
+                podeSair = true; // Libera a trava para o redirecionamento funcionar
+                window.location.href = "https://youtu.be/1MPZRcyTrcU?si=I1qYDWoSixoQuqs2";
+            }, 4500);
+        });
+    </script>
+</body>
+</html>
